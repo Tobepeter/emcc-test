@@ -29,7 +29,7 @@ function build(onFinish = null) {
     return
   }
 
-  spinner.start('build')
+  spinner.start('[wasm] build')
   // execSync(command, { stdio: 'inherit' })
 
   exec(command, (error, stdout, stderr) => {

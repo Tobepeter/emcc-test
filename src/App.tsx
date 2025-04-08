@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Button, Card, Typography, Space, Spin } from 'antd'
-import { wasmLoader, wasmModule } from './utils/wasm-loader'
+import { Button, Space, Spin, Typography } from 'antd'
 import 'antd/dist/reset.css'
+import { useEffect, useState } from 'react'
 import './App.css'
+import { axiosClient } from './utils/axios-clent'
+import { wasmLoader, wasmModule } from './utils/wasm-loader'
 
 function App() {
   const [result, setResult] = useState<number | null>(null)
@@ -11,19 +12,25 @@ function App() {
 
   const loadWasm = async () => {
     setLoading(true)
+    axiosClient.init()
     await wasmLoader.initWasm()
     setLoading(false)
     setStr(wasmModule.UTF8ToString(wasmModule._getStr()))
+  }
+
+  const handleTriggerEmCallback = () => {
+    wasmModule._triggerEmCallback()
   }
 
   useEffect(() => {
     loadWasm()
   }, [])
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     const sum = wasmModule._add(5, 3)
     setResult(sum)
   }
+
   const { Title, Text } = Typography
 
   return (
@@ -43,6 +50,10 @@ function App() {
           <Text className="text-center block">
             获取字符串: <Text strong>{str ?? '-'}</Text>
           </Text>
+
+          <Button type="primary" onClick={handleTriggerEmCallback} block>
+            触发 emCallback
+          </Button>
         </Space>
       </div>
     </Spin>

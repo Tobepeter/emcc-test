@@ -4,6 +4,8 @@ import express from 'express'
 import fs from 'fs'
 import path from 'path'
 import { ensureDirExists } from './utils/path-util.js'
+import cors from 'cors'
+import clear from 'clear'
 
 const __dirname = dirname(import.meta)
 
@@ -55,6 +57,7 @@ class LoggerServer {
 
   setupExpress() {
     this.app = express()
+    this.app.use(cors())
     this.app.use(express.json())
     this.app.use(express.urlencoded({ extended: true }))
 
@@ -84,7 +87,8 @@ class LoggerServer {
     })
 
     this.server = this.app.listen(this.config.port, () => {
-      console.log(`Logger server listening on port ${this.config.port}`)
+      clear()
+      console.log(`Logger server listening on port ${this.config.port}...`)
     })
   }
 
