@@ -19,6 +19,7 @@ class LoggerServer {
       msg: '/api/msg',
       finish: '/api/finish',
       flush: '/api/flush',
+      clean: '/api/clean',
     },
   }
 
@@ -68,6 +69,11 @@ class LoggerServer {
 
     this.app.post(this.config.api.flush, (req, res) => {
       this.flush()
+      res.json({ success: true })
+    })
+
+    this.app.post(this.config.api.clean, (req, res) => {
+      this.clean()
       res.json({ success: true })
     })
 
@@ -138,11 +144,29 @@ class LoggerServer {
     this.logList = [] // 清空日志列表
     this.lastFlushTime = new Date()
   }
+
+  getLogDir() {
+    return path.dirname(this.config.logFile)
+  }
+
+  clean() {
+    const logDir = this.getLogDir()
+    const files = fs.readdirSync(logDir)
+    files.forEach((file) => {
+      fs.unlinkSync(path.join(logDir, file))
+    })
+    this.preprareFile()
+  }
 }
 
 function main() {
   const server = new LoggerServer()
   server.start()
+
+  // TEST
+  setTimeout(() => {
+    server.clean()
+  }, 1000)
 }
 
 main()
