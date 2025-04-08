@@ -4,9 +4,16 @@ import { wasmUtil } from '../utils/wasm-util.js'
 
 const __dirname = dirname(import.meta)
 
-export const getWasmConfig = (mode) => {
+const wasmConfigCache = {}
+
+export const getWasmConfig = (mode = 'prod') => {
   const isDev = mode === 'dev'
-  return {
+
+  if (wasmConfigCache[mode]) {
+    return wasmConfigCache[mode]
+  }
+
+  wasmConfigCache[mode] = {
     srcDir: path.resolve(__dirname, '../../src/wasm/c'),
     outDir: path.resolve(__dirname, '../../src/wasm/build'),
     typesDir: path.resolve(__dirname, '../../src/wasm/bindings'),
@@ -35,6 +42,8 @@ export const getWasmConfig = (mode) => {
     },
     sourceMap: isDev, // -g
   }
+
+  return wasmConfigCache[mode]
 }
 
 export const getWasmConfigCMD = (mode) => {

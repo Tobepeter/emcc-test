@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Typography, Space } from 'antd'
+import { Button, Card, Typography, Space, Spin } from 'antd'
 import { wasmLoader, wasmModule } from './utils/wasm-loader'
 import 'antd/dist/reset.css'
 
 function App() {
   const [result, setResult] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    wasmLoader.initWasm()
+    wasmLoader.initWasm().then(() => {
+      setLoading(false)
+    })
   }, [])
 
   const handleAdd = async () => {
@@ -17,8 +20,8 @@ function App() {
   const { Title, Text } = Typography
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <Spin spinning={loading}>
+      <div className="h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
         <Space direction="vertical" size="large" className="w-full">
           <Title level={2} className="text-center">
             WebAssembly 测试
@@ -32,8 +35,8 @@ function App() {
             </Text>
           )}
         </Space>
-      </Card>
-    </div>
+      </div>
+    </Spin>
   )
 }
 
