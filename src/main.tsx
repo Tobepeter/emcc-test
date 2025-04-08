@@ -14,4 +14,6 @@ const strictApp = (
 
 const app = <App />
 
-createRoot(document.getElementById('root')).render(strictApp)
+// NOTE: 严格模式，很多信息会打印两次
+// createRoot(document.getElementById('root')).render(strictApp)
+createRoot(document.getElementById('root')).render(app)

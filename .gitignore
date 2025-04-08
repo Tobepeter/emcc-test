@@ -29,3 +29,4 @@ tmp/
 # === wasm ===
 src/wasm/build/
 src/wasm/bindings/
+compile_flags.txt

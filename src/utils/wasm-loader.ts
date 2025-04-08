@@ -1,4 +1,6 @@
 class WasmLoader {
+  private _isInit = false
+
   config = {
     // 可选配置
     // locateFile: (path: string) => {
@@ -19,7 +21,9 @@ class WasmLoader {
   }
 
   async initWasm() {
-    if (wasmModule) return
+    if (this._isInit) return
+    this._isInit = true
+
     const module = await import('@/wasm/build/main.js')
 
     // TODO: 使用这个会有一个报错
@@ -28,6 +32,11 @@ class WasmLoader {
     // wasmModule = await module.default(this.config)
 
     wasmModule = await module.default()
+
+    // 如果存在 _main 函数，静默调用
+    // if ((wasmModule as any)['_main']) {
+    //   ;(wasmModule as any)['_main']()
+    // }
 
     // TODO: 通过define控制环境调试代码
     win.wasmModule = wasmModule

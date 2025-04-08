@@ -21,11 +21,13 @@ const TYPES_DIR = path.resolve(__dirname, '../src/wasm/bindings')
 const EMCC_FLAGS = [
   '-s WASM=1',
   "-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','print','printErr']",
+  // NOTE: 注意中间不能有空格
   "-s EXPORTED_FUNCTIONS=['_malloc','_free']",
   '-s ALLOW_MEMORY_GROWTH=1',
   '-s ENVIRONMENT=web',
   '-s MODULARIZE=1',
   '-s EXPORT_ES6=1',
+  `-I ${SRC_DIR}`,
   // '-s EXPORT_NAME="wasmModule"',
 ].join(' ')
 
@@ -34,7 +36,12 @@ const EMCC_FLAGS = [
   ensureDirExists(dir)
 })
 
-const srcFiles = ['main.c'].map((file) => path.join(SRC_DIR, file))
+const srcFiles = [
+  // -- prettier breakline --
+  'test.c',
+  'main.c',
+]
+const srcFilesFullPath = srcFiles.map((file) => path.join(SRC_DIR, file))
 
 function main() {
   if (!commandExists('emcc')) {
@@ -42,13 +49,16 @@ function main() {
     process.exit(1)
   }
 
+  // TODO: clang的头文件warning
+  //  clang-15: warning: treating 'c-header' input as 'c++-header' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+
   const options = program.opts()
   const { verbose, dry } = options
 
-  const inputFile = srcFiles.join(' ')
+  const inputFiles = srcFilesFullPath.map((file) => `"${file}"`).join(' ')
   const outputFileName = 'main.js'
-  const outputFile = path.join(OUT_DIR, outputFileName)
-  const command = `emcc "${inputFile}" -o "${outputFile}" ${EMCC_FLAGS}`
+  const outputFile = `"${path.join(OUT_DIR, outputFileName)}"`
+  const command = `emcc ${inputFiles} -o ${outputFile} ${EMCC_FLAGS}`
   ;(verbose || dry) && printInfo(`command: ${command}`)
 
   if (!dry) {

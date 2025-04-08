@@ -1,0 +1,1 @@
+-I{Your emsdk project folder}/emsdk/upstream/emscripten/cache/sysroot/include

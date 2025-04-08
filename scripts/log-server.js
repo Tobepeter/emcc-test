@@ -9,7 +9,9 @@ const __dirname = dirname(import.meta)
 
 class LoggerServer {
   config = {
-    logFile: path.join(__dirname, '../temp', 'track.log'),
+    logFileDir: path.join(__dirname, '../temp'),
+    logFileName: 'track',
+    logFileExt: '.log',
     flushInterval: 1000,
     // TODO: 待实现，一定时间没有flush内容，进入sleep模式·
     // sleepInterval: 1000,
@@ -23,6 +25,8 @@ class LoggerServer {
     },
   }
 
+  logFilePath = ''
+
   /** @type {{msg: string, count: number, timeStamp: number}[]} */
   logList = []
   app = null
@@ -32,6 +36,9 @@ class LoggerServer {
   constructor(config = {}) {
     this.config = { ...this.config, ...config }
     // console.log('config', this.config)
+
+    const { logFileDir, logFileName, logFileExt } = this.config
+    this.logFilePath = path.join(logFileDir, `${logFileName}${logFileExt}`)
   }
 
   start() {
@@ -42,9 +49,8 @@ class LoggerServer {
   }
 
   preprareFile() {
-    const logDir = path.dirname(this.config.logFile)
-    ensureDirExists(logDir)
-    fs.writeFileSync(this.config.logFile, '')
+    ensureDirExists(this.config.logFileDir)
+    fs.writeFileSync(this.logFilePath, '')
   }
 
   setupExpress() {
@@ -114,11 +120,13 @@ class LoggerServer {
   }
 
   flush(finish = false) {
-    if (this.logList.length > 0) {
+    const { logFilePath, logList } = this
+
+    if (logList.length > 0) {
       let logContent = ''
       let prefix = ''
       let timeStr = ''
-      for (const log of this.logList) {
+      for (const log of logList) {
         prefix = ''
         if (this.config.timeStamp) {
           timeStr = dayjs(log.timeStamp).format('HH:mm')
@@ -131,29 +139,33 @@ class LoggerServer {
         }
       }
 
-      fs.appendFileSync(this.config.logFile, logContent)
+      fs.appendFileSync(logFilePath, logContent)
     }
 
     // 如果是finish，额外备份一份
     if (finish) {
-      const timeStr = dayjs().format('YYYY-MM-DD HH:mm:ss')
-      const newLogFile = this.config.logFile.replace('.log', `-${timeStr}.log`)
-      fs.copyFileSync(this.config.logFile, newLogFile)
+      const isEmpty = fs.readFileSync(logFilePath, 'utf8').length === 0
+
+      if (!isEmpty) {
+        const timeStr = dayjs().format('YYYY-MM-DD HH:mm:ss')
+        const newLogFile = logFilePath.replace('.log', `-${timeStr}.log`)
+        fs.copyFileSync(logFilePath, newLogFile)
+      }
     }
 
-    this.logList = [] // 清空日志列表
+    logList.length = 0
     this.lastFlushTime = new Date()
   }
 
-  getLogDir() {
-    return path.dirname(this.config.logFile)
-  }
-
   clean() {
-    const logDir = this.getLogDir()
+    const { logFilePath } = this
+    const logDir = path.dirname(logFilePath)
     const files = fs.readdirSync(logDir)
     files.forEach((file) => {
-      fs.unlinkSync(path.join(logDir, file))
+      // 只删除 logFileName 开头的文件
+      if (file.startsWith(this.config.logFileName)) {
+        fs.unlinkSync(path.join(logDir, file))
+      }
     })
     this.preprareFile()
   }
@@ -162,11 +174,6 @@ class LoggerServer {
 function main() {
   const server = new LoggerServer()
   server.start()
-
-  // TEST
-  setTimeout(() => {
-    server.clean()
-  }, 1000)
 }
 
 main()
