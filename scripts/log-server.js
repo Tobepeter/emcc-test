@@ -1,12 +1,11 @@
 import dayjs from 'dayjs'
+import { dirname } from 'dirname-filename-esm'
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { ensureDirExists } from './utils/path-util.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = dirname(import.meta)
 
 class LoggerServer {
   config = {

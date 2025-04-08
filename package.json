@@ -27,6 +27,7 @@
     "autoprefixer": "^10.4.21",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
+    "dirname-filename-esm": "^1.1.2",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",

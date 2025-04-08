@@ -1,13 +1,12 @@
 import { execSync } from 'child_process'
 import { program } from 'commander'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { commandExists } from './utils/node-util.js'
 import { ensureDirExists } from './utils/path-util.js'
 import { printError, printInfo, printSuccess } from './utils/print.js'
+import { dirname } from 'dirname-filename-esm'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = dirname(import.meta)
 
 program.option('--dry', 'dry run')
 program.option('-v, --verbose', 'verbose output')
