@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# 代码风格
+
+- 代码尽可能简洁，不要 public，默认使用推断类型
+- 不要 getInsntance，导出小写的实例

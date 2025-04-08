@@ -1,0 +1,8 @@
+src/wasm/
+
+node_modules/
+dist/
+build/
+
+package-lock.json
+package.json
