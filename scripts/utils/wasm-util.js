@@ -6,6 +6,7 @@ class WasmUtil {
    * @example exportedRuntimeMethods -> EXPORTED_RUNTIME_METHODS
    */
   transformFlagKey(key) {
+    // NOTE: lodash 数字是分开的，会变成 EXPORT_ES_6
     if (key === 'exportES6') {
       return 'EXPORT_ES6'
     }

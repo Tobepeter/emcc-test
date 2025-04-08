@@ -58,15 +58,16 @@ function startWatching() {
     fn: build,
   })
 
+  // 初始触发一次
+  watcher.on('ready', () => runner.trigger())
+
   // NOTE: 多次change，如果执行heavy task，没结束，一般后续结尾会多执行一次change，这无法避免
   watcher.on('change', (path) => {
     // console.log(`${path} changed`)
     runner.trigger()
   })
 
-  watcher.on('error', (error) => {
-    printError('watch error:', error)
-  })
+  watcher.on('error', (error) => printError('watch error:', error))
 }
 
 function main() {

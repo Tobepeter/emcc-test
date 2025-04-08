@@ -29,7 +29,7 @@ export const getWasmConfig = (mode = 'prod') => {
     flag: {
       wasm: true,
       environment: 'web',
-      exportedRuntimeMethods: ['ccall', 'cwrap', 'print', 'printErr'],
+      exportedRuntimeMethods: ['ccall', 'cwrap', 'print', 'printErr', 'stringToUTF8', 'UTF8ToString'],
       exportedFunctions: ['_malloc', '_free', '_main'],
       allowMemoryGrowth: true,
       modularize: true,

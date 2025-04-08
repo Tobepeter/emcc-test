@@ -2,15 +2,22 @@ import { useEffect, useState } from 'react'
 import { Button, Card, Typography, Space, Spin } from 'antd'
 import { wasmLoader, wasmModule } from './utils/wasm-loader'
 import 'antd/dist/reset.css'
+import './App.css'
 
 function App() {
   const [result, setResult] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [str, setStr] = useState('')
+
+  const loadWasm = async () => {
+    setLoading(true)
+    await wasmLoader.initWasm()
+    setLoading(false)
+    setStr(wasmModule.UTF8ToString(wasmModule._getStr()))
+  }
 
   useEffect(() => {
-    wasmLoader.initWasm().then(() => {
-      setLoading(false)
-    })
+    loadWasm()
   }, [])
 
   const handleAdd = async () => {
@@ -29,11 +36,13 @@ function App() {
           <Button type="primary" onClick={handleAdd} block>
             计算 5 + 3
           </Button>
-          {result !== null && (
-            <Text className="text-center block">
-              计算结果: <Text strong>{result}</Text>
-            </Text>
-          )}
+          <Text className="text-center block">
+            计算结果: <Text strong>{result ?? '-'}</Text>
+          </Text>
+
+          <Text className="text-center block">
+            获取字符串: <Text strong>{str ?? '-'}</Text>
+          </Text>
         </Space>
       </div>
     </Spin>
