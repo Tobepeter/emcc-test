@@ -22,7 +22,8 @@ const EMCC_FLAGS = [
   '-s WASM=1',
   "-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','print','printErr']",
   // NOTE: 注意中间不能有空格
-  "-s EXPORTED_FUNCTIONS=['_malloc','_free']",
+  //  main需要导出后才能自动调用
+  "-s EXPORTED_FUNCTIONS=['_malloc','_free','_main']",
   '-s ALLOW_MEMORY_GROWTH=1',
   '-s ENVIRONMENT=web',
   '-s MODULARIZE=1',

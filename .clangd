@@ -3,3 +3,6 @@ InlayHints:
 
 Diagnostics:
   UnusedIncludes: None
+
+  ## FIX: EM_ASM 这个函数一直报这个错误
+  Suppress: ['attribute_section_invalid_for_target']
