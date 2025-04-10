@@ -36,6 +36,7 @@ export const getWasmConfig = (mode = 'prod') => {
       exportES6: true,
       assertions: isDev,
       safeHeap: isDev,
+      // singleFile: true,
     },
     optimize: {
       level: isDev ? 0 : 3, // -O

@@ -12,8 +12,11 @@ EMSCRIPTEN_KEEPALIVE
 void triggerEmCallback()
 {
   // TODO: 貌似访问ts的一开始默认不能执行（不能放到main内），不知道什么原因
-  const char *str = "triggerEmCallback";
-  EM_ASM({ window.emCallback.track($0); }, str);
+  const char *str = "triggerEmCallback123";
+
+  // NOTE: 如果只有一行代码，大括号可以省略
+  // EM_ASM({ window.emCallback.track($0); }, str);
+  EM_ASM(window.emCallback.track($0), str);
 }
 
 int main()

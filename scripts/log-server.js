@@ -3,7 +3,7 @@ import { dirname } from 'dirname-filename-esm'
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
-import { ensureDirExists } from './utils/path-util.js'
+import { ensureDirExists } from './utils/node-util.js'
 import cors from 'cors'
 import clear from 'clear'
 
@@ -25,6 +25,7 @@ class LoggerServer {
       flush: '/api/flush',
       clean: '/api/clean',
     },
+    verbose: true,
   }
 
   logFilePath = ''
@@ -56,39 +57,50 @@ class LoggerServer {
   }
 
   setupExpress() {
-    this.app = express()
-    this.app.use(cors())
-    this.app.use(express.json())
-    this.app.use(express.urlencoded({ extended: true }))
+    const app = express()
+    this.app = app
+    app.use(cors())
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: true }))
+
+    const { api } = this.config
+    const { verbose } = this.config
 
     // API 端点
-    this.app.post(this.config.api.msg, (req, res) => {
+    app.post(api.msg, (req, res) => {
       const message = req.body.message
       if (!message) {
         return res.status(400).json({ error: 'Message is required' })
       }
-      this.push(message)
+      const messageArr = Array.isArray(message) ? message : [message]
+      messageArr.forEach((msg) => {
+        this.push(msg)
+      })
+      verbose && console.log(`[log-server] push: ${messageArr}`)
       res.json({ success: true })
     })
 
-    this.app.post(this.config.api.finish, (req, res) => {
+    app.post(api.finish, (req, res) => {
       this.flush(true)
+      verbose && console.log(`[log-server] finish`)
       res.json({ success: true })
     })
 
-    this.app.post(this.config.api.flush, (req, res) => {
+    app.post(api.flush, (req, res) => {
       this.flush()
+      verbose && console.log(`[log-server] flush`)
       res.json({ success: true })
     })
 
-    this.app.post(this.config.api.clean, (req, res) => {
+    app.post(api.clean, (req, res) => {
       this.clean()
+      verbose && console.log(`[log-server] clean`)
       res.json({ success: true })
     })
 
-    this.server = this.app.listen(this.config.port, () => {
+    this.server = app.listen(this.config.port, () => {
       clear()
-      console.log(`Logger server listening on port ${this.config.port}...`)
+      verbose && console.log(`Logger server listening on port ${this.config.port}...`)
     })
   }
 

@@ -3,8 +3,8 @@ import chokidar from 'chokidar'
 import clear from 'clear'
 import { initCommander } from './config/commander-config.js'
 import { getWasmConfig, getWasmConfigCMD } from './config/wasm-config.js'
-import { commandExists } from './utils/node-util.js'
-import { printError, printInfo, printSuccess } from './utils/print.js'
+import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
+import { printError, printInfo } from './utils/print.js'
 import { spinner } from './utils/spinner.js'
 import { TaskRunner } from './utils/task-runner.js'
 
@@ -18,6 +18,9 @@ function prepare() {
     printError('emcc not found')
     process.exit(1)
   }
+
+  ensureDirExists(config.outDir)
+  clearDir(config.outDir)
 }
 
 function build(onFinish = null) {
@@ -30,6 +33,7 @@ function build(onFinish = null) {
   }
 
   spinner.start('[wasm] build')
+
   // execSync(command, { stdio: 'inherit' })
 
   exec(command, (error, stdout, stderr) => {
