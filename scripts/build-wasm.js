@@ -7,6 +7,11 @@ import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
 import { printError, printInfo } from './utils/print.js'
 import { spinner } from './utils/spinner.js'
 import { TaskRunner } from './utils/task-runner.js'
+import { dirname } from 'dirname-filename-esm'
+import fs from 'fs'
+import path from 'path'
+
+const __dirname = dirname(import.meta)
 
 const options = initCommander()
 const { verbose, dry, mode, watch } = options
@@ -25,7 +30,11 @@ function prepare() {
 
 function build(onFinish = null) {
   if (watch) clear()
-  ;(verbose || dry) && printInfo(`command: ${command}`)
+
+  if (verbose || dry) {
+    printInfo(`[wasm] Running command:`)
+    printInfo(`${command}\n`)
+  }
 
   if (dry) {
     onFinish?.(true)
@@ -47,11 +56,23 @@ function build(onFinish = null) {
     }
     console.log(stdout)
     spinner.succeed(`Successfully compiled in ${mode} mode`)
+
+    /**
+     * 额外的日志
+     *
+     * emcc有的warning信息是放到stderr的
+     * 节约下性能，只有verbose才会写入文件
+     */
+    if (verbose && stderr) {
+      const logFile = path.join(__dirname, '../temp/wasm-build.log')
+      fs.writeFileSync(logFile, stderr)
+    }
     onFinish?.(true)
   })
 }
 
 function startWatching() {
+  // TODO: 有空支持，脚本修改，重启整个watch
   const { srcDir } = config
   const watcher = chokidar.watch(srcDir)
 

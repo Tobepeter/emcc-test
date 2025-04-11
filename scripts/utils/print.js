@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+
 export function printError(message) {
   console.error(chalk.red(message))
 }
