@@ -156,6 +156,10 @@ class WasmUtil {
     })
     return files.join(' ')
   }
+
+  isOutputHtml(outFileName) {
+    return outFileName.endsWith('.html')
+  }
 }
 
 export const wasmUtil = new WasmUtil()

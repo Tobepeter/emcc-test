@@ -57,7 +57,9 @@ export const getWasmConfig = (mode = 'prod') => {
       // EMCC_DEBUG: 1,
     },
 
-    profile: isDev,
+    profiling: isDev,
+    // cpuprofiler: isDev,
+    // memoryprofiler: isDev,
   }
 
   // override from commander
@@ -68,11 +70,12 @@ export const getWasmConfig = (mode = 'prod') => {
 }
 
 export const getWasmConfigCMD = (mode) => {
-  const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profile } = getWasmConfig(mode)
+  const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler } = getWasmConfig(mode)
   const outFilesFull = outFiles.length > 0 ? outFiles : wasmUtil.getInputFiles(srcDir)
   const inputFiles = wasmUtil.getFilesCmdArr(srcDir, outFilesFull)
   const outputFile = `\"${path.join(outDir, outFileName)}\"`
   const settingStr = wasmUtil.transformSettings(settings)
+  const isOutputHtml = wasmUtil.isOutputHtml(outFileName)
 
   // TODO: clang的头文件warning
   //  clang-15: warning: treating 'c-header' input as 'c++-header' when in C++ mode, this behavior is deprecated [-Wdeprecated]
@@ -88,6 +91,15 @@ export const getWasmConfigCMD = (mode) => {
     if (inject.pre) command += ` --pre-js \"${inject.pre}\"`
     if (inject.post) command += ` --post-js \"${inject.post}\"`
   }
-  if (profile) command += ` --profiling`
+  if (profiling) command += ` --profiling`
+  if (cpuprofiler) {
+    if (isOutputHtml) command += ` --cpuprofiler`
+    else printError('cpuprofiler is not supported for non-html output')
+  }
+  if (memoryprofiler) {
+    if (isOutputHtml) command += ` --memoryprofiler`
+    else printError('memoryprofiler is not supported for non-html output')
+  }
+
   return command
 }

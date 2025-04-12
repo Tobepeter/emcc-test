@@ -10,6 +10,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [str, setStr] = useState('')
   const [customResult, setCustomResult] = useState<string>('')
+  const [isCustomEnabled, setIsCustomEnabled] = useState(true)
 
   const loadWasm = async () => {
     setLoading(true)
@@ -33,11 +34,17 @@ function App() {
   }
 
   const handleCustom = () => {
-    setCustomResult('')
-    console.time('heavy')
-    const result = wasmModule._heavy()
-    console.timeEnd('heavy')
-    setCustomResult(result.toString())
+    setCustomResult('handleCustom...')
+    setIsCustomEnabled(false)
+
+    // 需要先修改了UI
+    setTimeout(() => {
+      console.time('heavy')
+      const result = wasmModule._heavy()
+      console.timeEnd('heavy')
+      setCustomResult(result.toString())
+      setIsCustomEnabled(true)
+    }, 10)
   }
 
   const { Title, Text } = Typography
@@ -64,7 +71,7 @@ function App() {
             触发 emCallback
           </Button>
 
-          <Button type="primary" onClick={handleCustom} block>
+          <Button type="primary" onClick={handleCustom} disabled={!isCustomEnabled} block>
             自定义函数
           </Button>
           <Text className="text-center block">
