@@ -9,8 +9,8 @@ function App() {
   const [result, setResult] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [str, setStr] = useState('')
-  const [customResult, setCustomResult] = useState<string>('')
-  const [isCustomEnabled, setIsCustomEnabled] = useState(true)
+  const [heavyResult, setHeavyResult] = useState<string>('')
+  const [isHeavyEnabled, setIsHeavyEnabled] = useState(true)
 
   const loadWasm = async () => {
     setLoading(true)
@@ -33,19 +33,25 @@ function App() {
     setResult(sum)
   }
 
-  const handleCustom = () => {
-    setCustomResult('handleCustom...')
-    setIsCustomEnabled(false)
+  const handleHeavy = () => {
+    setHeavyResult('handleHeavy...')
+    setIsHeavyEnabled(false)
 
     // 需要先修改了UI
     setTimeout(() => {
       console.time('heavy')
       const result = wasmModule._heavy()
       console.timeEnd('heavy')
-      setCustomResult(result.toString())
-      setIsCustomEnabled(true)
+      setHeavyResult(result.toString())
+      setIsHeavyEnabled(true)
     }, 10)
   }
+
+  const miscButtons = [
+    { label: 'Memory Increase', onClick: () => wasmModule._mem_increase() },
+    { label: 'Memory Free', onClick: () => wasmModule._mem_free() },
+    { label: 'Clear Console', onClick: () => console.clear() },
+  ]
 
   const { Title, Text } = Typography
 
@@ -71,12 +77,18 @@ function App() {
             触发 emCallback
           </Button>
 
-          <Button type="primary" onClick={handleCustom} disabled={!isCustomEnabled} block>
-            自定义函数
+          <Button type="primary" onClick={handleHeavy} disabled={!isHeavyEnabled} block>
+            Heavy
           </Button>
           <Text className="text-center block">
-            自定义函数结果: <Text strong>{customResult || '-'}</Text>
+            Heavy 结果: <Text strong>{heavyResult || '-'}</Text>
           </Text>
+
+          {miscButtons.map((button) => (
+            <Button key={button.label} type="primary" onClick={button.onClick} block>
+              {button.label}
+            </Button>
+          ))}
         </Space>
       </div>
     </Spin>

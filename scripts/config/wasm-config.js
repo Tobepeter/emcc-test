@@ -57,7 +57,8 @@ export const getWasmConfig = (mode = 'prod') => {
       // EMCC_DEBUG: 1,
     },
 
-    profiling: isDev,
+    // NOTE: 这个命令测不出来有什么作用，也许开了sourcemap差别不大了
+    // profiling: isDev,
     // cpuprofiler: isDev,
     // memoryprofiler: isDev,
   }
