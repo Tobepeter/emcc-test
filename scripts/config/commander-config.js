@@ -1,6 +1,6 @@
 import { program } from 'commander'
 
-export const initCommander = () => {
+export const initWasmCommander = () => {
   program.option('--dry', 'dry run')
   program.option('-v, --verbose', 'verbose output')
   program.option('-m, --mode <mode>', 'build mode (dev/prod)', 'prod')
@@ -24,6 +24,19 @@ export const initCommander = () => {
       console.log(`[commander] options: ${JSON.stringify(options)}\n`)
     }
   })
+
+  program.parse(process.argv)
+
+  return program.opts()
+}
+
+export const initDevSuiteCommander = () => {
+  program.option('-e, --exclude <exclude>', 'exclude script', (value, previous) => {
+    if (value) {
+      return [...previous, value]
+    }
+    return previous
+  }, [])
 
   program.parse(process.argv)
 

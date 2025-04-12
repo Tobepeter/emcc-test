@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
 import chokidar from 'chokidar'
 import clear from 'clear'
-import { initCommander } from './config/commander-config.js'
+import { initWasmCommander } from './config/commander-config.js'
 import { getWasmConfig, getWasmConfigCMD } from './config/wasm-config.js'
 import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
 import { printError, printInfo } from './utils/print.js'
@@ -13,7 +13,7 @@ import path from 'path'
 
 const __dirname = dirname(import.meta)
 
-const options = initCommander()
+const options = initWasmCommander()
 const { verbose, dry, mode, watch } = options
 const config = getWasmConfig(options.mode)
 const command = getWasmConfigCMD(options.mode)
