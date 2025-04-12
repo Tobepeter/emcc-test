@@ -23,6 +23,7 @@ export const getWasmConfig = (mode = 'prod') => {
     outFiles: [
       // -- prettier breakline --
       'test.c',
+      'heavy.c',
       'main.c',
     ],
     outFileName: 'main.js',
@@ -60,6 +61,8 @@ export const getWasmConfig = (mode = 'prod') => {
     env: {
       // EMCC_DEBUG: 1,
     },
+
+    profile: isDev,
   }
 
   // override from commander
@@ -70,7 +73,7 @@ export const getWasmConfig = (mode = 'prod') => {
 }
 
 export const getWasmConfigCMD = (mode) => {
-  const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose } = getWasmConfig(mode)
+  const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profile } = getWasmConfig(mode)
   const inputFiles = outFiles.map((file) => `\"${path.join(srcDir, file)}\"`).join(' ')
   const outputFile = `\"${path.join(outDir, outFileName)}\"`
   const settingStr = wasmUtil.transformSettings(settings)
@@ -89,5 +92,6 @@ export const getWasmConfigCMD = (mode) => {
     if (inject.pre) command += ` --pre-js \"${inject.pre}\"`
     if (inject.post) command += ` --post-js \"${inject.post}\"`
   }
+  if (profile) command += ` --profiling`
   return command
 }

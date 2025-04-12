@@ -39,8 +39,12 @@ class Track {
   async flushMsgList() {
     if (this.msgList.length === 0) return
 
-    await axiosClient.track.post(this.api.flush, { messages: this.msgList })
-    this.msgList = []
+    try {
+      await axiosClient.track.post(this.api.flush, { messages: this.msgList })
+    } finally {
+      // 如果失败了，也要清空掉，比如服务器没有启动，防止一直发起
+      this.msgList = []
+    }
   }
 
   async flush() {

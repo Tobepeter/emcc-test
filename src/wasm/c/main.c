@@ -21,7 +21,7 @@ void triggerEmCallback()
 
 int main()
 {
-  // printf("WebAssembly 模块已加载！\n");
+  printf("WebAssembly 模块已加载！\n");
   test();
   return 0;
 }

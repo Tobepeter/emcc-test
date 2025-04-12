@@ -9,6 +9,7 @@ function App() {
   const [result, setResult] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [str, setStr] = useState('')
+  const [customResult, setCustomResult] = useState<string>('')
 
   const loadWasm = async () => {
     setLoading(true)
@@ -29,6 +30,14 @@ function App() {
   const handleAdd = () => {
     const sum = wasmModule._add(5, 3)
     setResult(sum)
+  }
+
+  const handleCustom = () => {
+    setCustomResult('')
+    console.time('heavy')
+    const result = wasmModule._heavy()
+    console.timeEnd('heavy')
+    setCustomResult(result.toString())
   }
 
   const { Title, Text } = Typography
@@ -54,6 +63,13 @@ function App() {
           <Button type="primary" onClick={handleTriggerEmCallback} block>
             触发 emCallback
           </Button>
+
+          <Button type="primary" onClick={handleCustom} block>
+            自定义函数
+          </Button>
+          <Text className="text-center block">
+            自定义函数结果: <Text strong>{customResult || '-'}</Text>
+          </Text>
         </Space>
       </div>
     </Spin>
