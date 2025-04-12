@@ -1,4 +1,6 @@
+import fs from 'fs'
 import { snakeCase } from 'lodash-es'
+import { isAbsolute, join } from 'path'
 
 class WasmUtil {
   /**
@@ -122,6 +124,37 @@ class WasmUtil {
         printError(`Unknown setting: ${key}`)
       }
     }
+  }
+
+  /**
+   * 获取输入文件
+   * @param {string} dir
+   * @returns {string[]}
+   *
+   * 经过测试，emcc貌似不需要指定文件顺序
+   * 只要有头文件，在链接阶段，emcc会自动处理好来链接顺序
+   */
+  getInputFiles(dir) {
+    const files = fs.readdirSync(dir)
+    return files.filter((file) => file.endsWith('.c'))
+  }
+
+  /**
+   * 获取文件命令数组
+   * @param {string} dir 基准目录
+   * @param {string[]} arr 文件数组
+   * @returns {string}
+   * @example ['main.c', 'test.c'] -> "main.c" "test.c"
+   */
+  getFilesCmdArr(dir, arr) {
+    const files = arr.map((file) => {
+      let filePath = file
+      if (!isAbsolute(filePath)) {
+        filePath = join(dir, filePath)
+      }
+      return `\"${filePath}\"`
+    })
+    return files.join(' ')
   }
 }
 

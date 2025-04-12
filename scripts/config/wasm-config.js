@@ -19,19 +19,14 @@ export const getWasmConfig = (mode = 'prod') => {
     outDir: path.resolve(__dirname, '../../src/wasm/build'),
     typesDir: path.resolve(__dirname, '../../src/wasm/bindings'),
 
-    // 需要自行处理依赖顺序
-    outFiles: [
-      // -- prettier breakline --
-      'test.c',
-      'heavy.c',
-      'main.c',
-    ],
+    // 如果为空，从srcDir中获取所有.c文件
+    outFiles: [],
     outFileName: 'main.js',
     // outFileName: 'main.html',
 
     settings: {
       // NOTE: 这个其实是默认是1，不需要额外设置
-      WASM: 0,
+      WASM: 1,
       ENVIRONMENT: 'web',
       EXPORTED_RUNTIME_METHODS: ['ccall', 'cwrap', 'print', 'printErr', 'stringToUTF8', 'UTF8ToString'],
       EXPORTED_FUNCTIONS: ['_malloc', '_free', '_main'],
@@ -74,7 +69,8 @@ export const getWasmConfig = (mode = 'prod') => {
 
 export const getWasmConfigCMD = (mode) => {
   const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profile } = getWasmConfig(mode)
-  const inputFiles = outFiles.map((file) => `\"${path.join(srcDir, file)}\"`).join(' ')
+  const outFilesFull = outFiles.length > 0 ? outFiles : wasmUtil.getInputFiles(srcDir)
+  const inputFiles = wasmUtil.getFilesCmdArr(srcDir, outFilesFull)
   const outputFile = `\"${path.join(outDir, outFileName)}\"`
   const settingStr = wasmUtil.transformSettings(settings)
 

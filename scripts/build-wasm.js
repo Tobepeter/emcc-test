@@ -24,8 +24,10 @@ function prepare() {
     process.exit(1)
   }
 
-  ensureDirExists(config.outDir)
-  clearDir(config.outDir)
+  if (!dry) {
+    ensureDirExists(config.outDir)
+    clearDir(config.outDir)
+  }
 }
 
 function build(onFinish = null) {
