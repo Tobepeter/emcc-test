@@ -556,9 +556,10 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
 #define stbds_arrins(a,i,v)    (stbds_arrinsn((a),(i),1), (a)[i]=(v))
 
 // ===== Modify: 监控数组增长 =====
-// #define stbds_arrmaybegrow(a,n)  ((!(a) || stbds_header(a)->length + (n) > stbds_header(a)->capacity) \
-//                                   ? (stbds_arrgrow(a,n,0),0) : 0)
-
+#ifndef DEBUG
+#define stbds_arrmaybegrow(a,n)  ((!(a) || stbds_header(a)->length + (n) > stbds_header(a)->capacity) \
+                                  ? (stbds_arrgrow(a,n,0),0) : 0)
+#else
 #define STBDS_ARRMAYBEGROW_MAX 2000
 #define stbds_arrmaybegrow(a,n) ((!(a) || stbds_header(a)->length + (n) > stbds_header(a)->capacity) \
                                 ? ((a) && stbds_header(a)->length + (n) > STBDS_ARRMAYBEGROW_MAX \
@@ -566,6 +567,7 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
                                             a, stbds_header(a)->capacity), \
                                    stbds_arrgrow(a,n,0), 0) \
                                 : 0)
+#endif
 
 
 #define stbds_arrgrow(a,b,c)   ((a) = stbds_arrgrowf_wrapper((a), sizeof *(a), (b), (c)))

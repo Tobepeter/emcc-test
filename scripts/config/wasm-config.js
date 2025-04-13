@@ -121,9 +121,7 @@ export const getWasmConfigCMD = (mode) => {
   }
 
   if (define) {
-    for (const key in define) {
-      command += ` -D ${key}=${define[key]}`
-    }
+    command += wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' })
   }
 
   return command
