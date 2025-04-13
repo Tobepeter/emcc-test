@@ -4,7 +4,7 @@ import clear from 'clear'
 import { initWasmCommander } from './config/commander-config.js'
 import { getWasmConfig, getWasmConfigCMD } from './config/wasm-config.js'
 import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
-import { printError, printInfo } from './utils/print.js'
+import { printError, printInfo, printWarning } from './utils/print.js'
 import { spinner } from './utils/spinner.js'
 import { TaskRunner } from './utils/task-runner.js'
 import { dirname } from 'dirname-filename-esm'
@@ -33,9 +33,10 @@ function prepare() {
 function build(onFinish = null) {
   if (watch) clear()
 
+  let verboseCmd = ''
   if (verbose || dry) {
-    printInfo(`[wasm] Running command:`)
-    printInfo(`${command}\n`)
+    verboseCmd = `[wasm] Running command: \n${command}\n`
+    printInfo(verboseCmd)
   }
 
   if (dry) {
@@ -65,9 +66,14 @@ function build(onFinish = null) {
      * emcc有的warning信息是放到stderr的
      * 节约下性能，只有verbose才会写入文件
      */
-    if (verbose && stderr) {
+    if (verbose) {
+      let logStr = verboseCmd
+      if (stderr) {
+        printWarning(stderr)
+        logStr += `\n${stderr}`
+      }
       const logFile = path.join(__dirname, '../temp/wasm-build.log')
-      fs.writeFileSync(logFile, stderr)
+      fs.writeFileSync(logFile, logStr)
     }
     onFinish?.(true)
   })

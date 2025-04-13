@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { snakeCase } from 'lodash-es'
 import { isAbsolute, join } from 'path'
+import { glob } from 'glob'
 
 class WasmUtil {
   /**
@@ -135,8 +136,8 @@ class WasmUtil {
    * 只要有头文件，在链接阶段，emcc会自动处理好来链接顺序
    */
   getInputFiles(dir) {
-    const files = fs.readdirSync(dir)
-    return files.filter((file) => file.endsWith('.c'))
+    const files = glob.sync(`${dir}/**/*.c`)
+    return files
   }
 
   /**

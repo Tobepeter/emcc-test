@@ -40,6 +40,8 @@ export const getWasmConfig = (mode = 'prod') => {
       STACK_OVERFLOW_CHECK: isDev ? 2 : 0,
       // NOTE: 如果设置为true，没有.wasm文件，内容会被base64编码
       // SINGLE_FILE: true,
+
+      // MALLOC: 'emmalloc-verbose',
     },
     optimize: {
       level: isDev ? 0 : 3, // -O
