@@ -12,11 +12,12 @@ const wasmConfigCache = {}
 export const getWasmConfig = (mode = 'prod') => {
   const isDev = mode === 'dev'
 
+  // TODO: 想用watch配置构建，缓存肯定不能用，但是去掉也不行，因为模块已经被加载了
   if (wasmConfigCache[mode]) {
     return wasmConfigCache[mode]
   }
 
-  wasmConfigCache[mode] = {
+  const config = {
     srcDir: path.resolve(__dirname, '../../src/wasm/c'),
     outDir: path.resolve(__dirname, '../../src/wasm/build'),
     typesDir: path.resolve(__dirname, '../../src/wasm/bindings'),
@@ -87,9 +88,10 @@ export const getWasmConfig = (mode = 'prod') => {
 
   // override from commander
   const { setting } = program.opts()
-  if (setting) wasmUtil.overrideSetting(wasmConfigCache[mode].settings, setting)
+  if (setting) wasmUtil.overrideSetting(config.settings, setting)
 
-  return wasmConfigCache[mode]
+  wasmConfigCache[mode] = config
+  return config
 }
 
 export const getWasmConfigCMD = (mode) => {

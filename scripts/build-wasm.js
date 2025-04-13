@@ -23,9 +23,9 @@ function prepare() {
     process.exit(1)
   }
 
+  // dry模式不要修改文件结构
   if (!dry) {
     ensureDirExists(config.outDir)
-    clearDir(config.outDir)
   }
 }
 
@@ -44,6 +44,7 @@ function build(onFinish = null) {
     onFinish?.(true)
     return
   }
+  clearDir(config.outDir)
 
   spinner.start('[wasm] build')
   const logFile = path.join(__dirname, '../temp/wasm-build.log')
@@ -87,7 +88,8 @@ function build(onFinish = null) {
 function startWatching() {
   // TODO: 有空支持，脚本修改，重启整个watch
   const { srcDir } = config
-  const watcher = chokidar.watch(srcDir)
+  const configDir = path.join(__dirname, './config')
+  const watcher = chokidar.watch([srcDir, configDir])
 
   console.log(`watching c dir: ${srcDir}...`)
 
