@@ -46,12 +46,17 @@ function build(onFinish = null) {
   }
 
   spinner.start('[wasm] build')
+  const logFile = path.join(__dirname, '../temp/wasm-build.log')
 
   // execSync(command, { stdio: 'inherit' })
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
-      spinner.fail('Compilation failed: ' + error)
+      spinner.fail('Compilation failed')
+      printError(error)
+      fs.writeFileSync(logFile, error.message)
+
+      // TODO: error 也需要写入到日志文件，也许日志支持多个？
       onFinish?.(false)
       if (!watch) {
         process.exit(1)
@@ -73,7 +78,6 @@ function build(onFinish = null) {
         printWarning(stderr)
         logStr += `\n${stderr}`
       }
-      const logFile = path.join(__dirname, '../temp/wasm-build.log')
       fs.writeFileSync(logFile, logStr)
     }
     onFinish?.(true)
@@ -88,9 +92,7 @@ function startWatching() {
   console.log(`watching c dir: ${srcDir}...`)
 
   const runner = new TaskRunner()
-  runner.init({
-    fn: build,
-  })
+  runner.init({ fn: build })
 
   // 初始触发一次
   watcher.on('ready', () => runner.trigger())

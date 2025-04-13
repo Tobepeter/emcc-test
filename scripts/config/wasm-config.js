@@ -28,9 +28,21 @@ export const getWasmConfig = (mode = 'prod') => {
       // NOTE: 这个其实是默认是1，不需要额外设置
       WASM: 1,
       ENVIRONMENT: 'web',
-      EXPORTED_RUNTIME_METHODS: ['ccall', 'cwrap', 'print', 'printErr', 'stringToUTF8', 'UTF8ToString'],
+      EXPORTED_RUNTIME_METHODS: [
+        // -- prettier-linebreak --
+        'ccall',
+        'cwrap',
+        'print',
+        'printErr',
+        'stringToUTF8',
+        'UTF8ToString',
+        'stackTrace',
+        'addFunction',
+        'removeFunction',
+      ],
       EXPORTED_FUNCTIONS: ['_malloc', '_free', '_main'],
       ALLOW_MEMORY_GROWTH: true,
+      ALLOW_TABLE_GROWTH: true,
       MODULARIZE: true,
       EXPORT_ES6: true,
 
@@ -56,13 +68,17 @@ export const getWasmConfig = (mode = 'prod') => {
     },
 
     env: {
-      // EMCC_DEBUG: 1,
+      // EMCC_DEBUG: isDev,
     },
 
     // NOTE: 这个命令测不出来有什么作用，也许开了sourcemap差别不大了
     // profiling: isDev,
     // cpuprofiler: isDev,
     // memoryprofiler: isDev,
+
+    define: {
+      DEBUG: isDev,
+    },
   }
 
   // override from commander
@@ -73,7 +89,7 @@ export const getWasmConfig = (mode = 'prod') => {
 }
 
 export const getWasmConfigCMD = (mode) => {
-  const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler } = getWasmConfig(mode)
+  const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler, define } = getWasmConfig(mode)
   const srcFilesFull = srcFiles.length > 0 ? srcFiles : wasmUtil.getInputFiles(srcDir)
   const srcFilesStr = wasmUtil.getFilesCmdArr(srcDir, srcFilesFull)
   const outputFileStr = `\"${path.join(outDir, outFileName)}\"`
@@ -84,7 +100,7 @@ export const getWasmConfigCMD = (mode) => {
   //  clang-15: warning: treating 'c-header' input as 'c++-header' when in C++ mode, this behavior is deprecated [-Wdeprecated]
 
   let command = `emcc ${srcFilesStr} -o ${outputFileStr} -I ${srcDir}`
-  let envStr = env && wasmUtil.transformEnv(env)
+  let envStr = env && wasmUtil.transformConfig(env)
   if (envStr) command = `${envStr} ${command}`
   if (settingStr) command += ` ${settingStr}`
   if (optimize && optimize.level > 0) command += ` -O${optimize.level}`
@@ -102,6 +118,12 @@ export const getWasmConfigCMD = (mode) => {
   if (memoryprofiler) {
     if (isOutputHtml) command += ` --memoryprofiler`
     else printError('memoryprofiler is not supported for non-html output')
+  }
+
+  if (define) {
+    for (const key in define) {
+      command += ` -D ${key}=${define[key]}`
+    }
   }
 
   return command

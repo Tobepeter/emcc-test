@@ -1,7 +1,7 @@
-import fs from 'fs'
+import { glob } from 'glob'
 import { snakeCase } from 'lodash-es'
 import { isAbsolute, join } from 'path'
-import { glob } from 'glob'
+import { printError } from './print.js'
 
 class WasmUtil {
   /**
@@ -84,30 +84,47 @@ class WasmUtil {
   }
 
   /**
-   * 转换env
-   * @param {Record<string, any>} env
+   * 转换配置
+   * @param {Record<string, any>} obj
+   * @param {object} [options]
+   * @param {boolean} [options.omitBool=false] 是否忽略布尔值
+   * @param {string} [options.prefix=''] 前缀
    * @returns {string}
    */
-  transformEnv(env) {
-    let envStr = ''
-    const keys = Object.keys(env)
+  transformConfig(obj, options = {}) {
+    let result = ''
+    const keys = Object.keys(obj)
     const keyLen = keys.length
 
     for (let i = 0; i < keyLen; i++) {
       const key = keys[i]
-      const value = env[key]
-
-      if (typeof value === 'boolean') {
-        value = value ? '1' : '0'
-      }
-
-      envStr += `${key}=${value}`
-
-      if (i < keyLen - 1) {
-        envStr += ' '
-      }
+      const str = this.transformKV(key, obj[key], options)
+      if (!str) continue
+      result += str
+      if (i < keyLen - 1) result += ' '
     }
-    return envStr
+    return result
+  }
+
+  // TODO: 这样写太麻烦了，后续还是转成ts实在一点
+  /**
+   * 转换 key-value
+   * @param {string} key
+   * @param {string} value
+   * @param {object} [options]
+   * @param {boolean} [options.omitBool=false] 是否忽略布尔值
+   * @param {string} [options.prefix=''] 前缀
+   * @returns {string}
+   */
+  transformKV(key, value, options = {}) {
+    const { omitBool = false, prefix = '' } = options
+    let valueStr = value
+    if (typeof value === 'boolean') {
+      valueStr = value ? '1' : '0'
+      if (omitBool && !value) return ''
+    }
+    const prefixStr = prefix ? `${prefix} ` : ''
+    return `${prefixStr}${key}=${valueStr}`
   }
 
   /**
@@ -119,6 +136,7 @@ class WasmUtil {
     const keys = Object.keys(setting)
     for (const key of keys) {
       const val = setting[key]
+      // 必须定义了才能被覆盖
       if (target.hasOwnProperty(key)) {
         target[key] = JSON.parse(val)
       } else {

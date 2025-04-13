@@ -1,17 +1,17 @@
 import chalk from 'chalk'
 
-export function printError(message) {
-  console.error(chalk.red(message))
+export function printError(msg) {
+  console.error(chalk.red(msg))
 }
 
-export function printSuccess(message) {
-  console.log(chalk.green(message))
+export function printSuccess(msg) {
+  console.log(chalk.green(msg))
 }
 
-export function printInfo(message) {
-  console.log(chalk.blue(message))
+export function printInfo(msg) {
+  console.log(chalk.blue(msg))
 }
 
-export function printWarning(message) {
-  console.warn(chalk.yellow(message))
+export function printWarning(msg) {
+  console.warn(chalk.yellow(msg))
 }

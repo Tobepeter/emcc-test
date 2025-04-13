@@ -11,6 +11,10 @@
  * 这里做一个异步任务的防抖
  */
 export class TaskRunner {
+  /**
+   * 任务函数
+   * @type {(onFinish: () => void) => any}
+   */
   fn = null
   interval = 1000
   lastRunTime = 0
