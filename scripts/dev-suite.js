@@ -27,7 +27,7 @@ function main() {
   try {
     console.log('Executing commands concurrently...')
     concurrently(scriptsToRun, {
-      killOthers: true,
+      killOthers: ['failure', 'success'],
       cwd: projectRoot,
     })
   } catch (error) {

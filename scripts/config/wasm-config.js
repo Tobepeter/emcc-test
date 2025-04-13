@@ -20,7 +20,7 @@ export const getWasmConfig = (mode = 'prod') => {
     typesDir: path.resolve(__dirname, '../../src/wasm/bindings'),
 
     // 如果为空，从srcDir中获取所有.c文件
-    outFiles: [],
+    srcFiles: [],
     outFileName: 'main.js',
     // outFileName: 'main.html',
 
@@ -73,17 +73,17 @@ export const getWasmConfig = (mode = 'prod') => {
 }
 
 export const getWasmConfigCMD = (mode) => {
-  const { srcDir, outDir, outFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler } = getWasmConfig(mode)
-  const outFilesFull = outFiles.length > 0 ? outFiles : wasmUtil.getInputFiles(srcDir)
-  const inputFiles = wasmUtil.getFilesCmdArr(srcDir, outFilesFull)
-  const outputFile = `\"${path.join(outDir, outFileName)}\"`
+  const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler } = getWasmConfig(mode)
+  const srcFilesFull = srcFiles.length > 0 ? srcFiles : wasmUtil.getInputFiles(srcDir)
+  const srcFilesStr = wasmUtil.getFilesCmdArr(srcDir, srcFilesFull)
+  const outputFileStr = `\"${path.join(outDir, outFileName)}\"`
   const settingStr = wasmUtil.transformSettings(settings)
   const isOutputHtml = wasmUtil.isOutputHtml(outFileName)
 
   // TODO: clang的头文件warning
   //  clang-15: warning: treating 'c-header' input as 'c++-header' when in C++ mode, this behavior is deprecated [-Wdeprecated]
 
-  let command = `emcc ${inputFiles} -o ${outputFile} -I ${srcDir}`
+  let command = `emcc ${srcFilesStr} -o ${outputFileStr} -I ${srcDir}`
   let envStr = env && wasmUtil.transformEnv(env)
   if (envStr) command = `${envStr} ${command}`
   if (settingStr) command += ` ${settingStr}`

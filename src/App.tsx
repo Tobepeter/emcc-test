@@ -47,10 +47,21 @@ function App() {
     }, 10)
   }
 
+  const handleCustom = () => {
+    wasmModule.print = (message) => {
+      console.log('[print]', message)
+    }
+    wasmModule.printErr = (message) => {
+      console.error('[printErr]', message)
+    }
+    wasmModule._emcc_console()
+  }
+
   const miscButtons = [
     { label: 'Memory Increase', onClick: () => wasmModule._mem_increase() },
     { label: 'Memory Free', onClick: () => wasmModule._mem_free() },
     { label: 'Clear Console', onClick: () => console.clear() },
+    { label: 'Custom', onClick: handleCustom },
   ]
 
   const { Title, Text } = Typography

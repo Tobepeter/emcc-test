@@ -13,5 +13,5 @@ void test()
 {
   // printf("test: %s\n", str);
   // test_asm_str();
-  test_format();
+  // test_format();
 }

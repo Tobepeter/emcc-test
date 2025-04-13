@@ -1,22 +1,21 @@
 import { exec } from 'child_process'
 import chokidar from 'chokidar'
 import clear from 'clear'
+import { dirname } from 'dirname-filename-esm'
+import fs from 'fs'
+import path from 'path'
 import { initWasmCommander } from './config/commander-config.js'
 import { getWasmConfig, getWasmConfigCMD } from './config/wasm-config.js'
 import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
 import { printError, printInfo, printWarning } from './utils/print.js'
 import { spinner } from './utils/spinner.js'
 import { TaskRunner } from './utils/task-runner.js'
-import { dirname } from 'dirname-filename-esm'
-import fs from 'fs'
-import path from 'path'
 
 const __dirname = dirname(import.meta)
 
 const options = initWasmCommander()
 const { verbose, dry, mode, watch } = options
 const config = getWasmConfig(options.mode)
-const command = getWasmConfigCMD(options.mode)
 
 function prepare() {
   if (!commandExists('emcc')) {
@@ -32,6 +31,8 @@ function prepare() {
 
 function build(onFinish = null) {
   if (watch) clear()
+  // build都要重新计算，因为 inputFiles 可能会变化
+  const command = getWasmConfigCMD(options.mode)
 
   let verboseCmd = ''
   if (verbose || dry) {
@@ -100,7 +101,7 @@ function startWatching() {
     runner.trigger()
   })
 
-  watcher.on('error', (error) => printError('watch error:', error))
+  watcher.on('error', (error) => printError(`watch error: ${error}`))
 }
 
 function main() {

@@ -70,7 +70,8 @@ class LoggerServer {
     app.post(api.msg, (req, res) => {
       const message = req.body.message
       if (!message) {
-        return res.status(400).json({ error: 'Message is required' })
+        res.status(400).json({ error: 'Message is required' })
+        return
       }
       const messageArr = Array.isArray(message) ? message : [message]
       messageArr.forEach((msg) => {
@@ -130,7 +131,7 @@ class LoggerServer {
       this.logList.push({
         msg: message,
         count: 1,
-        timeStamp: dayjs().toDate(),
+        timeStamp: Date.now(),
       })
     }
   }
@@ -170,7 +171,7 @@ class LoggerServer {
     }
 
     logList.length = 0
-    this.lastFlushTime = new Date()
+    this.lastFlushTime = Date.now()
   }
 
   clean() {
