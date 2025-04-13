@@ -1,8 +1,10 @@
+import { program } from 'commander'
 import { dirname } from 'dirname-filename-esm'
 import path from 'path'
-import { program } from 'commander'
-import { wasmUtil } from '../utils/wasm-util.js'
 import { printError } from '../utils/print.js'
+import { wasmUtil } from '../utils/wasm-util.js'
+import { compact } from 'lodash-es'
+
 const __dirname = dirname(import.meta)
 
 const wasmConfigCache = {}
@@ -54,6 +56,8 @@ export const getWasmConfig = (mode = 'prod') => {
       // SINGLE_FILE: true,
 
       // MALLOC: 'emmalloc-verbose',
+
+      // RUNTIME_DEBUG: isDev,
     },
     optimize: {
       level: isDev ? 0 : 3, // -O
@@ -91,38 +95,34 @@ export const getWasmConfig = (mode = 'prod') => {
 export const getWasmConfigCMD = (mode) => {
   const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler, define } = getWasmConfig(mode)
   const srcFilesFull = srcFiles.length > 0 ? srcFiles : wasmUtil.getInputFiles(srcDir)
-  const srcFilesStr = wasmUtil.getFilesCmdArr(srcDir, srcFilesFull)
+  const srcFilesStr = wasmUtil.getFilesCmdStr(srcDir, srcFilesFull)
   const outputFileStr = `\"${path.join(outDir, outFileName)}\"`
   const settingStr = wasmUtil.transformSettings(settings)
   const isOutputHtml = wasmUtil.isOutputHtml(outFileName)
 
-  // TODO: clang的头文件warning
-  //  clang-15: warning: treating 'c-header' input as 'c++-header' when in C++ mode, this behavior is deprecated [-Wdeprecated]
-
-  let command = `emcc ${srcFilesStr} -o ${outputFileStr} -I ${srcDir}`
-  let envStr = env && wasmUtil.transformConfig(env)
-  if (envStr) command = `${envStr} ${command}`
-  if (settingStr) command += ` ${settingStr}`
-  if (optimize && optimize.level > 0) command += ` -O${optimize.level}`
-  if (sourceMap) command += ` -g`
-  if (verbose) command += ` -v`
+  const envStr = env && wasmUtil.transformConfig(env)
+  const commandArr = [envStr, `emcc ${srcFilesStr} -o ${outputFileStr} -I ${srcDir}`, settingStr]
+  if (optimize && optimize.level > 0) commandArr.push(`-O${optimize.level}`)
+  if (sourceMap) commandArr.push(`-g`)
+  if (verbose) commandArr.push(`-v`)
   if (inject) {
-    if (inject.pre) command += ` --pre-js \"${inject.pre}\"`
-    if (inject.post) command += ` --post-js \"${inject.post}\"`
+    if (inject.pre) commandArr.push(`--pre-js \"${inject.pre}\"`)
+    if (inject.post) commandArr.push(`--post-js \"${inject.post}\"`)
   }
-  if (profiling) command += ` --profiling`
+  if (profiling) commandArr.push(`--profiling`)
   if (cpuprofiler) {
-    if (isOutputHtml) command += ` --cpuprofiler`
+    if (isOutputHtml) commandArr.push(`--cpuprofiler`)
     else printError('cpuprofiler is not supported for non-html output')
   }
   if (memoryprofiler) {
-    if (isOutputHtml) command += ` --memoryprofiler`
+    if (isOutputHtml) commandArr.push(`--memoryprofiler`)
     else printError('memoryprofiler is not supported for non-html output')
   }
 
   if (define) {
-    command += wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' })
+    commandArr.push(wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' }))
   }
 
+  const command = compact(commandArr).join(' ')
   return command
 }

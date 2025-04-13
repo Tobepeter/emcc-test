@@ -1,5 +1,5 @@
 import { glob } from 'glob'
-import { snakeCase } from 'lodash-es'
+import { snakeCase, compact } from 'lodash-es'
 import { isAbsolute, join } from 'path'
 import { printError } from './print.js'
 
@@ -44,7 +44,7 @@ class WasmUtil {
    * @returns {string}
    */
   transformSettings(settings) {
-    let result = ''
+    const result = []
     const keys = Object.keys(settings)
     const keyLen = keys.length
 
@@ -55,32 +55,20 @@ class WasmUtil {
       // NOTE: 还是还原了和emcc一样的写法
       // const k = wasmUtil.transformFlagKey(key)
       const k = key
-
       const valueType = typeof value
 
-      // 布尔类型没有值，防止尾部额外添加空格
-      let hasValue = true
       if (valueType === 'boolean') {
         if (value) {
-          result += `-s ${k}=1`
-        } else {
-          hasValue = false
+          // result += `-s ${k}=1`
+          result.push(`-s ${k}`)
         }
       } else if (Array.isArray(value)) {
-        // eg. "['ccall', 'cwrap', 'print', 'printErr']"
-        result += `-s ${k}=${wasmUtil.transformArrayValue(value)}`
+        result.push(`-s ${k}=${wasmUtil.transformArrayValue(value)}`)
       } else {
-        result += `-s ${k}=${value}`
-      }
-
-      if (i < keyLen - 1 && hasValue) {
-        result += ' '
+        result.push(`-s ${k}=${value}`)
       }
     }
-
-    // 最后一个布尔值为false，需要删掉前面追加的空格
-    result = result.trim()
-    return result
+    return result.join(' ')
   }
 
   /**
@@ -92,7 +80,7 @@ class WasmUtil {
    * @returns {string}
    */
   transformConfig(obj, options = {}) {
-    let result = ''
+    const result = []
     const keys = Object.keys(obj)
     const keyLen = keys.length
 
@@ -100,10 +88,9 @@ class WasmUtil {
       const key = keys[i]
       const str = this.transformKV(key, obj[key], options)
       if (!str) continue
-      result += str
-      if (i < keyLen - 1) result += ' '
+      result.push(str)
     }
-    return result
+    return result.join(' ')
   }
 
   // TODO: 这样写太麻烦了，后续还是转成ts实在一点
@@ -165,7 +152,7 @@ class WasmUtil {
    * @returns {string}
    * @example ['main.c', 'test.c'] -> "main.c" "test.c"
    */
-  getFilesCmdArr(dir, arr) {
+  getFilesCmdStr(dir, arr) {
     const files = arr.map((file) => {
       let filePath = file
       if (!isAbsolute(filePath)) {
