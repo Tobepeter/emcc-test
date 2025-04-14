@@ -121,9 +121,7 @@ export const getWasmConfigCMD = (mode) => {
     else printError('memoryprofiler is not supported for non-html output')
   }
 
-  if (define) {
-    commandArr.push(wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' }))
-  }
+  if (define) commandArr.push(wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' }))
 
   const command = compact(commandArr).join(' ')
   return command
