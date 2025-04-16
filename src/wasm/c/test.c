@@ -1,5 +1,6 @@
 #include "test.h"
 #include "basic/c-format.h"
+#include "emcc/emcc-emjs.h"
 #include "emcc/emcc-macro.h"
 #include <emscripten.h>
 #include <stdio.h>
@@ -15,5 +16,6 @@ void test()
   // printf("test: %s\n", str);
   // test_asm_str();
   // test_format();
-  emcc_macro();
+  // emcc_macro();
+  test_emjs();
 }
