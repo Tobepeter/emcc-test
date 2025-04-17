@@ -1,108 +1,49 @@
-import { Button, Space, Spin, Typography } from 'antd'
+import { Card, Spin, Tabs, TabsProps } from 'antd'
 import 'antd/dist/reset.css'
 import { useEffect, useState } from 'react'
 import './App.css'
+import { EmccBasic } from './components/emcc/EmccBasic'
+import { EmccMemMonitor } from './components/emcc/EmccMemMonitor'
 import { axiosClient } from './utils/axios-clent'
-import { wasmLoader, wasmModule } from './utils/wasm-loader'
+import { wasmLoader } from './utils/wasm-loader'
 
 function App() {
-  const [result, setResult] = useState<number | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [str, setStr] = useState('')
-  const [heavyResult, setHeavyResult] = useState<string>('')
-  const [isHeavyEnabled, setIsHeavyEnabled] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   const loadWasm = async () => {
-    setLoading(true)
     axiosClient.init()
     await wasmLoader.initWasm()
     setLoading(false)
-    setStr(wasmModule.UTF8ToString(wasmModule._getStr()))
-  }
-
-  const handleTriggerEmCallback = () => {
-    wasmModule._triggerEmCallback()
   }
 
   useEffect(() => {
     loadWasm()
   }, [])
 
-  const handleAdd = () => {
-    const sum = wasmModule._add(5, 3)
-    setResult(sum)
+  if (loading) {
+    return <Spin spinning={loading} />
   }
 
-  const handleHeavy = () => {
-    setHeavyResult('handleHeavy...')
-    setIsHeavyEnabled(false)
-
-    // 需要先修改了UI
-    setTimeout(() => {
-      console.time('heavy')
-      const result = wasmModule._heavy()
-      console.timeEnd('heavy')
-      setHeavyResult(result.toString())
-      setIsHeavyEnabled(true)
-    }, 10)
-  }
-
-  const handleCustom = () => {
-    wasmModule.print = (message) => {
-      console.log('[print]', message)
-    }
-    wasmModule.printErr = (message) => {
-      console.error('[printErr]', message)
-    }
-    wasmModule._emcc_console()
-  }
-
-  const miscButtons = [
-    { label: 'Memory Increase', onClick: () => wasmModule._mem_increase() },
-    { label: 'Memory Free', onClick: () => wasmModule._mem_free() },
-    { label: 'Clear Console', onClick: () => console.clear() },
-    { label: 'Custom', onClick: handleCustom },
+  const items: TabsProps['items'] = [
+    {
+      key: 'basic',
+      label: '基础',
+      children: <EmccBasic />,
+    },
+    {
+      key: 'mem-monitor',
+      label: '内存监控',
+      children: <EmccMemMonitor />,
+    },
   ]
 
-  const { Title, Text } = Typography
+  // TODO: 持久化？
+  const defaultIndex = 1
 
   return (
-    <Spin spinning={loading}>
-      <div className="h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-        <Space direction="vertical" size="large" className="w-full">
-          <Title level={2} className="text-center">
-            WebAssembly 测试
-          </Title>
-          <Button type="primary" onClick={handleAdd} block>
-            计算 5 + 3
-          </Button>
-          <Text className="text-center block">
-            计算结果: <Text strong>{result ?? '-'}</Text>
-          </Text>
-
-          <Text className="text-center block">
-            获取字符串: <Text strong>{str ?? '-'}</Text>
-          </Text>
-
-          <Button type="primary" onClick={handleTriggerEmCallback} block>
-            触发 emCallback
-          </Button>
-
-          <Button type="primary" onClick={handleHeavy} disabled={!isHeavyEnabled} block>
-            Heavy
-          </Button>
-          <Text className="text-center block">
-            Heavy 结果: <Text strong>{heavyResult || '-'}</Text>
-          </Text>
-
-          {miscButtons.map((button) => (
-            <Button key={button.label} type="primary" onClick={button.onClick} block>
-              {button.label}
-            </Button>
-          ))}
-        </Space>
-      </div>
-    </Spin>
+    <Card>
+      <Tabs defaultActiveKey={items[defaultIndex].key} items={items} />
+    </Card>
   )
 }
 

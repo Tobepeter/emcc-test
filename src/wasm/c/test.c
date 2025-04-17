@@ -2,6 +2,7 @@
 #include "basic/c-format.h"
 #include "emcc/emcc-emjs.h"
 #include "emcc/emcc-macro.h"
+#include "emcc/emcc-tracing.h"
 #include <emscripten.h>
 #include <stdio.h>
 
@@ -13,9 +14,10 @@ void test_asm_str()
 
 void test()
 {
-  // printf("test: %s\n", str);
+  printf("test\n");
   // test_asm_str();
   // test_format();
   // emcc_macro();
-  test_emjs();
+  // test_emjs();
+  // test_trace_start();
 }

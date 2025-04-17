@@ -1,0 +1,196 @@
+#include <emscripten.h>
+#include <emscripten/heap.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 内存块的元数据
+typedef struct block_meta {
+    size_t size;           // 不包含元数据的实际可用大小
+    struct block_meta *next;
+    int free;             // 1 表示空闲，0 表示已使用
+    int magic;           // 用于调试：0x12345678
+} block_meta_t;
+
+#define META_SIZE sizeof(block_meta_t)
+#define WASM_PAGE_SIZE 65536
+#define MIN_BLOCK_SIZE 32
+#define MAGIC_NUMBER 0x12345678
+
+static block_meta_t *global_base = NULL;      // 堆的起始位置
+static block_meta_t *global_last = NULL;      // 最后一个块
+static uintptr_t current_break = 0;           // 当前break位置
+
+// 用于sbrk的实现
+static void *extend_heap(intptr_t increment) {
+    size_t pages = (increment + WASM_PAGE_SIZE - 1) / WASM_PAGE_SIZE;
+    if (!emscripten_resize_heap(current_break + (pages * WASM_PAGE_SIZE))) {
+        return (void*)-1;
+    }
+    void *old_break = (void*)current_break;
+    current_break += increment;
+    return old_break;
+}
+
+// 查找合适的空闲块
+static block_meta_t *find_free_block(block_meta_t **last, size_t size) {
+    block_meta_t *current = global_base;
+    while (current && !(current->free && current->size >= size)) {
+        *last = current;
+        current = current->next;
+    }
+    return current;
+}
+
+// 请求新的堆空间并创建新块
+static block_meta_t *request_space(block_meta_t *last, size_t size) {
+    block_meta_t *block;
+    block = extend_heap(size + META_SIZE);
+    if (block == (void*)-1) {
+        return NULL;
+    }
+
+    if (last) {
+        last->next = block;
+    }
+    block->size = size;
+    block->next = NULL;
+    block->free = 0;
+    block->magic = MAGIC_NUMBER;
+    global_last = block;
+    return block;
+}
+
+// 分割过大的空闲块
+static void split_block(block_meta_t *block, size_t size) {
+    if (block->size >= size + META_SIZE + MIN_BLOCK_SIZE) {
+        block_meta_t *new_block = (block_meta_t *)((char *)block + META_SIZE + size);
+        new_block->size = block->size - size - META_SIZE;
+        new_block->next = block->next;
+        new_block->free = 1;
+        new_block->magic = MAGIC_NUMBER;
+        
+        block->size = size;
+        block->next = new_block;
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE
+uintptr_t *emscripten_get_sbrk_ptr(void) {
+    return &current_break;
+}
+
+EMSCRIPTEN_KEEPALIVE
+void *sbrk(intptr_t increment) {
+    return extend_heap(increment);
+}
+
+void *malloc(size_t size) {
+    printf("malloc: %zu\n", size);
+    if (size == 0) return NULL;
+
+    // 对齐到8字节边界
+    size = (size + 7) & ~7;
+    
+    block_meta_t *block;
+    
+    // 首次分配
+    if (global_base == NULL) {
+        block = request_space(NULL, size);
+        if (block == NULL) return NULL;
+        global_base = block;
+    } else {
+        block_meta_t *last = global_base;
+        block = find_free_block(&last, size);
+        if (block == NULL) {
+            // 没有找到合适的块，创建新的
+            block = request_space(last, size);
+            if (block == NULL) return NULL;
+        } else {
+            // 找到合适的块，可能需要分割
+            block->free = 0;
+            split_block(block, size);
+        }
+    }
+
+    return (block + 1);  // 返回块数据区域的起始位置
+}
+
+void *calloc(size_t nmemb, size_t size) {
+    printf("calloc: %zu x %zu\n", nmemb, size);
+    size_t total_size = nmemb * size;
+    if (size != 0 && total_size / size != nmemb) return NULL;  // 溢出检查
+
+    void *ptr = malloc(total_size);
+    if (ptr) {
+        memset(ptr, 0, total_size);
+    }
+    return ptr;
+}
+
+// 获取块的元数据
+static block_meta_t *get_block_meta(void *ptr) {
+    return ((block_meta_t*)ptr) - 1;
+}
+
+// 尝试合并相邻的空闲块
+static void coalesce_free_blocks(void) {
+    block_meta_t *current = global_base;
+    while (current && current->next) {
+        if (current->free && current->next->free) {
+            current->size += META_SIZE + current->next->size;
+            current->next = current->next->next;
+            if (current->next == NULL) {
+                global_last = current;
+            }
+        } else {
+            current = current->next;
+        }
+    }
+}
+
+void *realloc(void *ptr, size_t new_size) {
+    printf("realloc: %p, %zu\n", ptr, new_size);
+    
+    if (ptr == NULL) return malloc(new_size);
+    if (new_size == 0) {
+        free(ptr);
+        return NULL;
+    }
+
+    block_meta_t *block_meta = get_block_meta(ptr);
+    if (block_meta->magic != MAGIC_NUMBER) {
+        return NULL;  // 无效的指针
+    }
+
+    // 对齐新的大小
+    new_size = (new_size + 7) & ~7;
+
+    if (block_meta->size >= new_size) {
+        // 当前块足够大，可能需要分割
+        split_block(block_meta, new_size);
+        return ptr;
+    }
+
+    // 需要更大的空间
+    void *new_ptr = malloc(new_size);
+    if (new_ptr == NULL) return NULL;
+
+    memcpy(new_ptr, ptr, block_meta->size);
+    free(ptr);
+    return new_ptr;
+}
+
+void free(void *ptr) {
+    printf("free: %p\n", ptr);
+    if (ptr == NULL) return;
+
+    block_meta_t *block_meta = get_block_meta(ptr);
+    if (block_meta->magic != MAGIC_NUMBER) {
+        return;  // 无效的指针
+    }
+
+    block_meta->free = 1;
+    coalesce_free_blocks();  // 合并相邻的空闲块
+}

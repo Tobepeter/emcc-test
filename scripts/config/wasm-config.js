@@ -56,7 +56,9 @@ export const getWasmConfig = (mode = 'prod') => {
       // NOTE: 如果设置为true，没有.wasm文件，内容会被base64编码
       // SINGLE_FILE: true,
 
+      // TODO: 需要直接空字符串或者null字段省略
       // MALLOC: 'emmalloc-verbose',
+      // MALLOC: 'none',
 
       // RUNTIME_DEBUG: isDev,
     },
@@ -84,6 +86,9 @@ export const getWasmConfig = (mode = 'prod') => {
     define: {
       DEBUG: isDev,
     },
+
+    // tracing: isDev,
+    // clearCache: isDev,
   }
 
   // override from commander
@@ -95,7 +100,7 @@ export const getWasmConfig = (mode = 'prod') => {
 }
 
 export const getWasmConfigCMD = (mode) => {
-  const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler, define } = getWasmConfig(mode)
+  const { srcDir, outDir, srcFiles, outFileName, settings, optimize, sourceMap, inject, env, verbose, profiling, cpuprofiler, memoryprofiler, define, clearCache, tracing } = getWasmConfig(mode)
   const srcFilesFull = srcFiles.length > 0 ? srcFiles : wasmUtil.getInputFiles(srcDir)
   const srcFilesStr = wasmUtil.getFilesCmdStr(srcDir, srcFilesFull)
   const outputFileStr = `\"${path.join(outDir, outFileName)}\"`
@@ -122,7 +127,8 @@ export const getWasmConfigCMD = (mode) => {
   }
 
   if (define) commandArr.push(wasmUtil.transformConfig(define, { omitBool: true, prefix: '-D' }))
-
+  if (clearCache) commandArr.push('--clear-cache')
+  if (tracing) commandArr.push('--tracing')
   const command = compact(commandArr).join(' ')
   return command
 }

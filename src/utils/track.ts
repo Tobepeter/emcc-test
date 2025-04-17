@@ -1,7 +1,14 @@
 import { axiosClient } from './axios-clent'
+import { runner } from './runner'
 
 class Track {
   port = 3000 // TODO: read from env
+
+  /**
+   * 是否开启追踪
+   * 如果不开启，为仅在控制台打印
+   */
+  enable = false
 
   api = {
     msg: '/api/msg',
@@ -10,29 +17,23 @@ class Track {
     clear: '/api/clear',
   }
 
-  msgList: string[] = []
-  timer = -1
+  private msgList: string[] = []
 
   // TODO: health check
 
+  private isInit = false
+
+  init() {
+    if (this.isInit) return
+    this.isInit = true
+    runner.add(() => this.flushMsgList(), { duration: 1000 })
+  }
+
   async msg(message: string) {
+    if (!message) return
     console.log('[track] msg', message)
-    this.msgList.push(message)
-    this.startUpdate()
-  }
-
-  startUpdate() {
-    if (this.timer !== -1) return
-
-    this.timer = setInterval(() => {
-      this.flushMsgList()
-    }, 1000)
-  }
-
-  stopUpdate() {
-    if (this.timer !== -1) {
-      clearInterval(this.timer)
-      this.timer = -1
+    if (this.enable) {
+      this.msgList.push(message)
     }
   }
 
@@ -48,14 +49,17 @@ class Track {
   }
 
   async flush() {
+    if (!this.enable) return
     await axiosClient.track.post(this.api.flush)
   }
 
   async finish() {
+    if (!this.enable) return
     await axiosClient.track.post(this.api.finish)
   }
 
   async clear() {
+    if (!this.enable) return
     await axiosClient.track.post(this.api.clear)
   }
 }
