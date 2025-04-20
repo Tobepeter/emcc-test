@@ -1,4 +1,4 @@
-import { axiosClient } from './axios-clent'
+import { axiosClient } from './axios-client'
 import { runner } from './runner'
 
 class Track {

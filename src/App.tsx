@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { EmccBasic } from './components/emcc/EmccBasic'
 import { EmccMemMonitor } from './components/emcc/EmccMemMonitor'
-import { axiosClient } from './utils/axios-clent'
+import { axiosClient } from './utils/axios-client'
 import { wasmLoader } from './utils/wasm-loader'
 
 function App() {
