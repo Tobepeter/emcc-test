@@ -2,8 +2,7 @@
 #include <emscripten.h>
 #include <stdio.h>
 
-void emcc_macro()
-{
+void emcc_macro() {
   // === 是否emcc构建 ===
 #ifdef __EMSCRIPTEN__
   printf("__EMSCRIPTEN__\n");

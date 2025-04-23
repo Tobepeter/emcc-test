@@ -1,10 +1,10 @@
 #ifndef EMCC_MALLOC_H
 #define EMCC_MALLOC_H
 
-#include <emscripten.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "../em-callback.h"
+#include <emscripten.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifndef DEBUG
 // NOTE: 其实我不想替换默认的 malloc 和 free
@@ -16,30 +16,34 @@
 #define callocX(nmemb, size) calloc(nmemb, size)
 #define reallocX(ptr, size) realloc(ptr, size)
 #else
-#define mallocX(size) ({ \
-  void *ptr = malloc(size); \
-  em_notifyAdd(ptr, size); \
-  ptr; \
-})
+#define mallocX(size)                                                                                                                                                                                  \
+  ({                                                                                                                                                                                                   \
+    void *ptr = malloc(size);                                                                                                                                                                          \
+    em_notifyAdd(ptr, size);                                                                                                                                                                           \
+    ptr;                                                                                                                                                                                               \
+  })
 
-#define freeX(ptr) { \
-  em_notifyRemove(ptr); \
-  free(ptr); \
-}
+#define freeX(ptr)                                                                                                                                                                                     \
+  {                                                                                                                                                                                                    \
+    em_notifyRemove(ptr);                                                                                                                                                                              \
+    free(ptr);                                                                                                                                                                                         \
+  }
 
 // TODO: realloc 和 calloc 暂时没测试
-#define reallocX(ptr, size) ({ \
-  em_notifyRemove(ptr); \
-  void *new_ptr = realloc(ptr, size); \
-  em_notifyAdd(new_ptr, size); \
-  new_ptr; \
-})
+#define reallocX(ptr, size)                                                                                                                                                                            \
+  ({                                                                                                                                                                                                   \
+    em_notifyRemove(ptr);                                                                                                                                                                              \
+    void *new_ptr = realloc(ptr, size);                                                                                                                                                                \
+    em_notifyAdd(new_ptr, size);                                                                                                                                                                       \
+    new_ptr;                                                                                                                                                                                           \
+  })
 
-#define callocX(nmemb, size) ({ \
-  void *ptr = calloc(nmemb, size); \
-  em_notifyAdd(ptr, nmemb * size); \
-  ptr; \
-})
+#define callocX(nmemb, size)                                                                                                                                                                           \
+  ({                                                                                                                                                                                                   \
+    void *ptr = calloc(nmemb, size);                                                                                                                                                                   \
+    em_notifyAdd(ptr, nmemb * size);                                                                                                                                                                   \
+    ptr;                                                                                                                                                                                               \
+  })
 #endif
 
 #endif

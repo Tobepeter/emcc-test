@@ -1,6 +1,7 @@
-import { glob } from 'glob'
+import fg from 'fast-glob'
 import { snakeCase, compact } from 'lodash-es'
 import { isAbsolute, join } from 'path'
+import path from 'path'
 import { printError } from './print.js'
 
 class WasmUtil {
@@ -141,8 +142,8 @@ class WasmUtil {
    * 只要有头文件，在链接阶段，emcc会自动处理好来链接顺序
    */
   getInputFiles(dir) {
-    const files = glob.sync(`${dir}/**/*.c`)
-    return files
+    const files = fg.sync('**/*.c', { cwd: dir, onlyFiles: true })
+    return files.map((file) => path.join(dir, file))
   }
 
   /**

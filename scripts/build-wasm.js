@@ -1,12 +1,13 @@
 import { exec } from 'child_process'
 import chokidar from 'chokidar'
 import clear from 'clear'
+import commandExists from 'command-exists'
 import { dirname } from 'dirname-filename-esm'
 import fs from 'fs'
 import path from 'path'
 import { initWasmCommander } from './config/commander-config.js'
 import { getWasmConfig, getWasmConfigCMD } from './config/wasm-config.js'
-import { clearDir, commandExists, ensureDirExists } from './utils/node-util.js'
+import { clearDir, ensureDirExists } from './utils/node-util.js'
 import { printError, printInfo, printWarning } from './utils/print.js'
 import { spinner } from './utils/spinner.js'
 import { TaskRunner } from './utils/task-runner.js'
@@ -18,7 +19,7 @@ const { verbose, dry, mode, watch } = options
 const config = getWasmConfig(options.mode)
 
 function prepare() {
-  if (!commandExists('emcc')) {
+  if (!commandExists.sync('emcc')) {
     printError('emcc not found')
     process.exit(1)
   }

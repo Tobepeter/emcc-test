@@ -1,11 +1,10 @@
-#include <stdio.h>
+#include "emcc-console.h"
 #include <emscripten.h>
 #include <emscripten/console.h>
-#include "emcc-console.h"
+#include <stdio.h>
 
 EMSCRIPTEN_KEEPALIVE
-void emcc_console()
-{
+void emcc_console() {
   emscripten_console_log("emscripten_console_log\n");
   emscripten_console_warn("emscripten_console_warn\n");
   emscripten_console_error("emscripten_console_error\n");

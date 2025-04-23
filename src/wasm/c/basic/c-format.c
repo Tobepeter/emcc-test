@@ -4,8 +4,7 @@
 // 在C语言中，printf函数中使用的 % 开头的格式化语法被称为格式说明符（Format
 // Specifier）或格式控制符（Format Control Character）
 
-void test_format()
-{
+void test_format() {
   int myInt = 10;
   float myFloat = 1.0;
   float myFloatE = 123456789.0;

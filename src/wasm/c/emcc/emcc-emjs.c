@@ -10,11 +10,9 @@ EM_JS(int, test_emjs_int, (), { return 123; });
 EM_JS(int, test_emjs_int_param, (int a, int b), { return a + b; });
 
 // NOTE: 胶水代码中有这个内置函数，可以直接使用
-EM_JS(void, test_emjs_str_param, (char *str),
-      { console.log(UTF8ToString(str)); });
+EM_JS(void, test_emjs_str_param, (char *str), { console.log(UTF8ToString(str)); });
 
-void test_emjs()
-{
+void test_emjs() {
   test_emjs_console();
   const int a = test_emjs_int();
   printf("test_emjs_int: %d\n", a);

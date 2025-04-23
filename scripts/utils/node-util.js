@@ -1,12 +1,7 @@
-import { spawnSync } from 'child_process'
 import fs from 'fs'
 import { homedir } from 'os'
 import path from 'path'
 
-export function commandExists(command) {
-  const result = spawnSync('which', [command], { stdio: 'ignore' })
-  return result.status === 0
-}
 
 /**
  * 将 ~ 替换为当前用户的主目录

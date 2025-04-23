@@ -14,8 +14,7 @@ C语言运行时修改常量区是会报错的
 */
 
 EMSCRIPTEN_KEEPALIVE
-void test_emcc_write_constant()
-{
+void test_emcc_write_constant() {
   // NOTE: 防止老是构建警告，先注释掉了
 
   // printf("helloStr ptr: %p\n", helloStr);

@@ -3,8 +3,7 @@
 #include <stdio.h>
 
 EMSCRIPTEN_KEEPALIVE
-void test_mallocX()
-{
+void test_mallocX() {
   int *p = (int *)mallocX(100);
   printf("p: %p\n", p);
   freeX(p);
