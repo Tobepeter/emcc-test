@@ -1,2 +1,8 @@
 BasedOnStyle: LLVM
-BreakBeforeBraces: Allman
+ColumnLimit: 200
+# BreakBeforeBraces: Allman
+
+AllowShortFunctionsOnASingleLine: InlineOnly # 短函数换行策略
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse # if 语句换行策略
+# AlignConsecutiveDeclarations: true # 对齐连续声明
+# AlignConsecutiveAssignments: true # 对齐连续赋值

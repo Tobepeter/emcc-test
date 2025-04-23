@@ -3,7 +3,7 @@ import 'antd/dist/reset.css'
 import { useEffect, useState } from 'react'
 import './App.css'
 import { EmccBasic } from './components/emcc/EmccBasic'
-import { EmccMemMonitor } from './components/emcc/EmccMemMonitor'
+import { EmccMemory } from './components/emcc/EmccMemory'
 import { axiosClient } from './utils/axios-client'
 import { wasmLoader } from './utils/wasm-loader'
 
@@ -33,7 +33,7 @@ function App() {
     {
       key: 'mem-monitor',
       label: '内存监控',
-      children: <EmccMemMonitor />,
+      children: <EmccMemory />,
     },
   ]
 
